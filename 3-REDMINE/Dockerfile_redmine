@@ -1,0 +1,64 @@
+#
+#
+#
+FROM sameersbn/redmine:4.0.5
+
+# プラグインのコピー
+# COPY pkg/*.zip /tmp/.
+
+ENV TZ Asia/Tokyo
+
+RUN set -eux; \
+    # パッケージのインストール
+    apt-get -y update ; \
+    # zip形式のパッケージを解凍するためにunzipをインストール
+    apt install -y unzip \
+    # 日本語用にIPAフォントをインストール
+    #ghostscript fonts-ipaexfont \
+    ; \
+    rm -rf /var/lib/apt/lists/* ; \
+    \
+    ln -sf /usr/share/zoneinfo/Asia/Tokyo /etc/localtime ; \
+    gem install bundler ;
+
+USER redmine
+
+RUN set -eux; \
+    # テーマコピー
+    cd /home/redmine/redmine ; \
+    git clone -q https://github.com/farend/redmine_theme_farend_fancy.git public/themes/farend_fancy ; \
+    \
+    # プラグインコピー
+    cd /home/redmine/redmine/plugins ; \
+    git clone -q https://github.com/devopskube/redmine_openid_connect.git ; \
+    git clone -q https://github.com/akiko-pusu/redmine_issue_templates.git ; \
+    git clone -q https://github.com/alphanodes/redmine_messenger.git redmine_messenger ; \
+    git clone -q https://github.com/tkusukawa/redmine_work_time.git ; \
+    git clone -q https://github.com/onozaty/redmine-view-customize.git view_customize ; \
+    \
+    rm -fr */.git ; \
+    \
+    # view-customize (http://drywind7541.livedoor.blog/archives/15470792.html)
+    # https://github.com/onozaty/redmine-view-customize
+    cd .. ; \
+    bundle update json ; \
+    bundle install --without development test ; \
+    #bundle install --no-deployment ; \
+    \
+    #chown -R redmine.redmine /home/redmine/redmine/plugins /home/redmine/redmine/public/themes/farend_fancy ; \
+    \
+    # プラグインの展開
+    cd /home/redmine/redmine/plugins ; \
+    for pkg in /tmp/*.zip ; do echo ${pkg} ; [ -f ${pkg} ] && unzip ${pkg} ; done ; \
+    rm -f /tmp/*.zip ;
+
+USER root
+
+# プラグインインストール(この時点では、DBとは接続していないので、イメージ作成時には行えない。)
+#cd /home/redmine/redmine ; \
+#rake redmine:plugins:migrate RAILS_ENV=production
+
+#chown redmine.redmine /home/redmine/redmine/Gemfile.lock* ; \
+#git clone -q https://github.com/koppen/redmine_github_hook.git ; \
+#git clone -q https://github.com/bdemirkir/sidebar_hide.git && \
+#git clone -q https://github.com/peclik/clipboard_image_paste.git ; \

@@ -1,0 +1,61 @@
+version: "3.1"
+
+services:
+  redmine_sv:
+    #image: "sameersbn/redmine:4.0.5"
+    build:
+      context: .
+      dockerfile: Dockerfile_redmine
+    image: redime4:0.1
+    container_name: redmine_sv
+    environment:
+      - "TZ=Asia/Tokyo"
+      # URL
+      - "REDMINE_RELATIVE_URL_ROOT=/redmine"
+
+      # データベース パスワード
+      - "DB_ADAPTER=postgresql"
+      - "DB_PORT=5432"
+      - "DB_HOST=db_sv"
+      - "DB_NAME=redmine_db"
+
+      # postgresのユーザ/パスワードを指定
+      - "DB_USER=postgres"
+      - "DB_PASS=mTF4hJsf9PTExJdq"
+
+      # 内蔵するnginxは使用しない
+      - "NGINX_ENABLED=false"
+      # メール機能は使用しない
+      - "SMTP_ENABLED=false"
+
+      # memcached設定
+      # - MEMCACHE_HOST=memcache_sv
+      # - MEMCACHE_PORT=11211
+    # links:
+    # - memcache_sv:memcached
+    ports:
+      - "8088:8080"
+
+    volumes:
+      # データ永続化
+      - "filevolume:/home/redmine/data"
+      - "logvolume:/var/log/redmine"
+    #restart: always
+    networks:
+      - task_network
+
+#  memcache_sv:
+#    image: memcached:1.5.20-alpine
+#    container_name: memcache_sv
+#    restart: always
+#    command: memcached -m 32
+#    networks:
+#      - task_network
+
+networks:
+  task_network:
+    external: true
+
+volumes:
+  filevolume:
+  logvolume:

@@ -1,0 +1,27 @@
+version: "3.1"
+
+services:
+  db_sv:
+    image: postgres:12.1-alpine
+    container_name: db_sv
+    environment:
+      # データベース ユーザ・パスワード
+      - "POSTGRES_PASSWORD=mTF4hJsf9PTExJdq"
+      - "POSTGRES_USER=postgres"
+    volumes:
+      # データ永続化
+      - datavolume:/var/lib/postgresql/data
+      # 初期データベース作成
+      - ./01.createDB.sql:/docker-entrypoint-initdb.d/01.createDB.sql:ro
+    #restart: always
+    ports:
+      - "5432:5432"
+    networks:
+      - task_network
+
+networks:
+  task_network:
+    external: true
+
+volumes:
+  datavolume:

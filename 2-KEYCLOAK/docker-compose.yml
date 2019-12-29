@@ -1,0 +1,26 @@
+version: "3.1"
+
+services:
+  keycloak_sv:
+    image: jboss/keycloak:8.0.1
+    container_name: keycloak_sv
+    environment:
+      # KEYCLOAKの管理者ユーザとパスワード
+      - "KEYCLOAK_USER=root"
+      - "KEYCLOAK_PASSWORD=QGLeNVD2VWwwe4z6"
+
+      # DBとしてpostgresを使用
+      - "DB_VENDOR=postgres"
+      - "DB_ADDR=db_sv:5432"
+      - "DB_USER=postgres"
+      - "DB_PASSWORD=mTF4hJsf9PTExJdq"
+      - "DB_DATABASE=keycloak_db"
+    ports:
+      - "8080:8080"
+    #restart: always
+    networks:
+      - task_network
+
+networks:
+  task_network:
+    external: true
